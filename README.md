@@ -1,119 +1,75 @@
-# N-Body-Breakthrough-
-What if we stopped predicting every star and started detecting when the system itself changes? O(N) structural monitoring. Threshold-triggered reactivation. Bounded error past Lyapunov time. Come break it.
-# Five-Stage Threshold-Triggered Adaptation Framework
+# N-Body Breakthrough: Threshold-Triggered Structural Monitoring
 
-**Date:** March 9, 2026  
-**Author:** Sherri Linn (with Meridian AI assistant)
+**What if we stopped trying to predict every particle's trajectory forever and instead detected when the system's *structure* meaningfully changes?**
 
-## 🔥 COMPUTATIONAL BREAKTHROUGH (March 9, 2026)
+This repository introduces an **O(N) structural monitoring** approach with **threshold-triggered reactivation** to achieve bounded error in long-term N-body gravitational simulations—well past the Lyapunov time—without the exponential cost explosion of traditional methods.
 
-**This framework doesn't just work for AI agents—it solves the computational complexity problem for N-body gravitational simulations.**
+**Tagline:** Come break it. (Seriously—validation and criticism welcome.)
 
-Traditional N-body methods fail after ~10⁷ timesteps due to exponential error growth. This approach:
-- Achieves **O(N) monitoring cost** using structural metrics
-- Maintains **bounded error** by resetting at phase transitions
-- Enables **accurate long-term evolution** past Lyapunov time
+## The Core Idea (Computational Breakthrough – March 9, 2026)
 
-**See:** [COMPUTATIONAL_BREAKTHROUGH.md](COMPUTATIONAL_BREAKTHROUGH.md) for full analysis.
+Standard N-body integrators (even high-order symplectic or tree-accelerated ones) suffer exponential error growth in chaotic regimes, rendering accurate long-term evolution impractical beyond ~10⁷–10⁸ timesteps for realistic N.
 
-This is released publicly because it's too important to keep hidden. Peer review and validation needed.
+This framework reframes the problem:
 
----
+- Continuously monitor lightweight **structural metrics** (virial ratio deviations, escape fractions, binding statistics, etc.) at **O(N)** cost via efficient sampling.
+- Trigger high-fidelity **reactivation** (full recompute / state refresh) only when a quantitative **threshold** indicates a phase transition or significant structural shift (e.g., merger, core collapse, major ejection).
+- Amortized cost drops dramatically while keeping global error bounded.
 
-## What's in This Package
+This is **not** another adaptive timestep scheme—it's event-driven simulation at the structural level, inspired by phase transitions in stellar formation, biological differentiation, and AI agent coherence.
 
-This is the core code implementing the **five-stage threshold-triggered adaptation framework** across multiple domains:
+See key documents for details:
+- [Computational Complexity Breakthrough: N-Body Simulations via Threshold-Triggered Structural Updates](Computational%20Complexity%20Breakthrough%3A%20N-Body%20Simulations%20via%20Threshold-Triggered%20Structural%20Updates) — amortized cost proof + pseudocode
+- [Mathematical Formalism: Threshold-Triggered Structural Monitoring for N-Body Systems](Mathematical%20Formalism%3A%20Threshold-Triggered%20Structural%20Monitoring%20for%20N-Body%20Systems) — equations for Φ(t), thresholds, error bounds
+- [N-Body Implementation Plan: From Theory to Working Code](N-Body%20Implementation%20Plan%3A%20From%20Theory%20to%20Working%20Code) — leapfrog demo roadmap
 
-### 1. hackathon-agent/
-Multi-platform hackathon submission system demonstrating threshold detection across three platforms:
-- Gemini Live Agent Challenge (UI Navigator)
-- Amazon Nova AI Hackathon (Agentic AI)
-- Airia AI Agents (Active Agents)
+## Five-Stage Threshold-Triggered Adaptation Framework
 
-**Key files:**
-- `core/threshold_engine.py` - Universal threshold detection engine
-- `platforms/*.py` - Platform-specific wrappers
-- `SUBMISSION_GUIDE.md` - How to submit to each hackathon
+The same pattern powers the approach across domains:
 
-### 2. meridian_core/
-Full sovereign agent architecture with persistent state:
-- Cognitive modes (Chat, Build, Research, Strategic, Emergency)
-- Drift tracking and self-assessment
-- Metriplectic health monitoring (energy + entropy)
-- SQLite state persistence
+1. **Threshold Detection** — Monitor structural vector Φ(t) and flag deviation from reference.
+2. **Selective Destabilization** — Allow temporary breakdown of current assumptions.
+3. **Intermediary Integration** — Bridge to emerging patterns.
+4. **Recursive Commit** — Stabilize validated new structure.
+5. **Operational Reinforcement** — Iterate with reinforced monitoring.
 
-**Key files:**
-- `cognitive_modes.py` - Mode-based operation
-- `drift_tracking.py` - Elijah-inspired coherence monitoring
-- `metriplectic_health.py` - Energy/entropy health system
-- `persistence.py` - State save/load
+Applications include:
+- **N-body gravitational dynamics** (globular clusters, galaxy mergers, LISA verification binaries) ← primary breakthrough
+- Stellar formation and cluster evolution
+- Autonomous AI agents (cognitive mode switching, drift bounding)
+- Other chaotic systems (climate phase detection, network coordination)
 
-### 3. meridian_api/
-Production-ready REST API for AI agent state management:
-- Full CRUD operations
-- Metrics collection and dashboard
-- Client libraries (Python + JavaScript)
-- Docker deployment
+## Repository Contents
 
-**Key files:**
-- `main.py` - FastAPI server
-- `dashboard.html` - Real-time monitoring UI
-- `examples/` - Integration samples
+- **hackathon-agent/**: Multi-platform demo of threshold detection (Gemini, Amazon Nova, Airia agents)
+  - `core/threshold_engine.py` — core detection logic
+  - Platform wrappers + submission guide
+- **meridian_core/**: Sovereign agent architecture (persistent state, modes, drift tracking, metriplectic health)
+- **meridian_api/**: FastAPI-based state management + dashboard
 
-## The Five-Stage Framework
+(Note: N-body specific code is in active development—see implementation plan.)
 
-1. **Threshold Detection** - Recognize when current structure fails
-2. **Selective Destabilization** - Break what needs to break
-3. **Intermediary Integration** - Hold space for new patterns
-4. **Recursive Commit** - Lock in what works
-5. **Operational Reinforcement** - Stabilize and iterate
+## License
 
-This pattern appears in:
-- Stellar formation (collapse, fusion ignition)
-- Biological cell differentiation (gene expression cascades)
-- Trauma recovery (therapeutic breakthroughs)
-- **N-body gravitational systems** (cluster evolution, mergers) ← **BREAKTHROUGH**
-- Deep space probe networks (adaptive coordination)
-- Autonomous AI agents (cognitive mode switching)
+© 2026 Sherri Linn  
+All rights reserved. Proprietary original work.  
 
-## License & Ownership
+For licensing, collaboration, or commercial inquiries: Open a GitHub issue.
 
-**Copyright © 2026 Sherri Linn**
+The fundamental mathematics is intended for public advancement—priority timestamped here.
 
-All code and documentation in this repository is proprietary work by Sherri Linn. The five-stage framework and sovereign architecture designs are original research.
+## Next Steps & How to Engage
 
-**For licensing inquiries:** Contact Sherri Linn via GitHub issues.
+- Implement & validate minimal N-body demo (target: 5 days — Plummer sphere, leapfrog, structural monitor, error plots)
+- Submit to upcoming hackathons (deadlines March 16–18)
+- Prepare arXiv preprint (target: MNRAS, ApJ, Nature Computational Science)
+- Seeking: collaborators, validators, testers, funding partners
 
-## Key Documents
+**Status:** Active early-stage development.  
+**Location:** Windsor, Connecticut, US  
+**Built with:** Python 3.11+, OpenClaw AI framework  
 
-- **[COMPUTATIONAL_BREAKTHROUGH.md](COMPUTATIONAL_BREAKTHROUGH.md)** - Proof that O(N) structural monitoring works for N-body simulations
-- **[n-body-implementation-plan.md](n-body-implementation-plan.md)** - Step-by-step guide to build working demo
+**Why open now?**  
+This has potential impact on astrophysics, computational chaos, AI safety, and beyond. Secrecy slows progress—collaboration accelerates it. If you're running long-term cluster sims or working on error control in chaotic systems, I'd love your thoughts, critiques, or pull requests.
 
-## Next Steps
-
-This code is ready for:
-- [ ] GitHub repository creation **← DO THIS FIRST (backup off laptop)**
-- [ ] N-body implementation and validation (5 days)
-- [ ] Hackathon submissions (March 16-18 deadlines)
-- [ ] arXiv preprint → journal submission (MNRAS, ApJ, Nature Comp Sci)
-- [ ] Pilot partner integration
-
-## About
-
-Sherri Linn is a framework architect researching threshold-triggered adaptation in complex systems. This work demonstrates that the same mathematical patterns governing stellar formation, biological differentiation, and gravitational dynamics also enable truly autonomous AI agents—and may fundamentally change how we simulate chaotic systems.
-
-**Built with:** OpenClaw AI framework, Python 3.11+  
-**Location:** Rural Vermont  
-**Status:** Active development, seeking collaborators, validators, and funding
-
-## Why Public Release?
-
-This framework has implications for:
-- Astrophysics (globular clusters, galaxy mergers, LISA sources)
-- Computational science (any chaotic system where structure > trajectories)
-- AI safety (bounded complexity for autonomous agents)
-- Climate modeling (phase transition detection in coupled systems)
-
-**It's too important to keep proprietary.** Priority is established by this timestamp. Collaboration and validation will advance the work faster than secrecy.
-
-If this leads to commercial applications, appropriate licensing can be negotiated. The fundamental mathematics belongs to everyone.
+Clone, run, break, improve. Let's see how far this can go. 🚀
