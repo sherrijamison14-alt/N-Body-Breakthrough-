@@ -88,7 +88,6 @@ All code and documentation in this repository is proprietary work by Sherri Linn
 
 - **[COMPUTATIONAL_BREAKTHROUGH.md](COMPUTATIONAL_BREAKTHROUGH.md)** - Proof that O(N) structural monitoring works for N-body simulations
 - **[n-body-implementation-plan.md](n-body-implementation-plan.md)** - Step-by-step guide to build working demo
-- **[hackathon-blitz-strategy.md](hackathon-blitz-strategy.md)** - Multi-platform hackathon submission plan
 
 ## Next Steps
 
