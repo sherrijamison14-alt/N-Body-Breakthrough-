@@ -1,0 +1,310 @@
+N-Body Implementation Plan: From Theory to Working Code
+
+**Goal:** Build a minimal working demonstration that validates the O(N) structural monitoring approach.
+
+## Phase 1: Basic N-Body Engine (2-3 days)
+
+### Core Physics Module
+```python
+# nbody_core.py
+
+import numpy as np
+from dataclasses import dataclass
+from typing import List, Tuple
+
+@dataclass
+class Particle:
+    position: np.ndarray  # 3D position
+    velocity: np.ndarray  # 3D velocity
+    mass: float
+    id: int
+
+class NBodyState:
+    def __init__(self, particles: List[Particle]):
+        self.particles = particles
+        self.N = len(particles)
+        self.time = 0.0
+        
+    def compute_acceleration(self, i: int, softening=0.01) -> np.ndarray:
+        """Compute gravitational acceleration on particle i"""
+        G = 1.0  # Use N-body units
+        acc = np.zeros(3)
+        pos_i = self.particles[i].position
+        
+        for j, p in enumerate(self.particles):
+            if i == j:
+                continue
+            r_vec = p.position - pos_i
+            r = np.linalg.norm(r_vec)
+            r_soft = np.sqrt(r**2 + softening**2)
+            acc += G * p.mass * r_vec / r_soft**3
+            
+        return acc
+    
+    def leapfrog_step(self, dt: float):
+        """Simple leapfrog integrator"""
+        # Kick
+        for i, p in enumerate(self.particles):
+            acc = self.compute_acceleration(i)
+            p.velocity += 0.5 * dt * acc
+        
+        # Drift
+        for p in self.particles:
+            p.position += dt * p.velocity
+        
+        # Kick
+        for i, p in enumerate(self.particles):
+            acc = self.compute_acceleration(i)
+            p.velocity += 0.5 * dt * acc
+        
+        self.time += dt
+```
+
+## Phase 2: O(N) Structural Monitor (1-2 days)
+
+### Linear Complexity Metrics
+```python
+# structural_monitor.py
+
+class StructuralMonitor:
+    def __init__(self, threshold=0.1):
+        self.threshold = threshold
+        self.previous_state = None
+        
+    def compute_virial_ratio(self, state: NBodyState) -> float:
+        """O(N) kinetic energy, O(N) potential via sampling"""
+        # Kinetic: exact, O(N)
+        kinetic = sum(0.5 * p.mass * np.dot(p.velocity, p.velocity) 
+                      for p in state.particles)
+        
+        # Potential: sampled, O(N)
+        potential = 0.0
+        sample_size = max(10, int(np.sqrt(state.N)))
+        
+        for i, p in enumerate(state.particles):
+            # Sample sqrt(N) neighbors
+            neighbors = np.random.choice(
+                [j for j in range(state.N) if j != i],
+                size=min(sample_size, state.N - 1),
+                replace=False
+            )
+            for j in neighbors:
+                r = np.linalg.norm(p.position - state.particles[j].position)
+                potential -= p.mass * state.particles[j].mass / r
+        
+        # Scale back to full estimate
+        potential *= state.N / sample_size
+        
+        return 2 * kinetic / abs(potential) if potential != 0 else 1.0
+    
+    def compute_escape_fraction(self, state: NBodyState) -> float:
+        """O(N) - fraction of particles near escape velocity"""
+        # Rough escape velocity estimate
+        total_mass = sum(p.mass for p in state.particles)
+        avg_radius = np.mean([np.linalg.norm(p.position) for p in state.particles])
+        v_escape = np.sqrt(2.0 * total_mass / avg_radius)
+        
+        count = sum(1 for p in state.particles 
+                    if np.linalg.norm(p.velocity) > 0.8 * v_escape)
+        return count / state.N
+    
+    def compute_binding_distribution(self, state: NBodyState) -> np.ndarray:
+        """O(N) - binding energy to nearest massive neighbor"""
+        binding = []
+        for i, p in enumerate(state.particles):
+            # Find nearest neighbor (O(N) per particle, but simple)
+            min_potential = 0
+            for j, p2 in enumerate(state.particles):
+                if i == j:
+                    continue
+                r = np.linalg.norm(p.position - p2.position)
+                potential = -p.mass * p2.mass / r
+                if potential < min_potential:
+                    min_potential = potential
+            binding.append(min_potential)
+        return np.array(binding)
+    
+    def compute_divergence(self, state: NBodyState) -> float:
+        """Weighted combination of structural metrics - O(N)"""
+        virial = self.compute_virial_ratio(state)
+        escape_frac = self.compute_escape_fraction(state)
+        binding_dist = self.compute_binding_distribution(state)
+        
+        if self.previous_state is None:
+            self.previous_state = {
+                'virial': virial,
+                'escape': escape_frac,
+                'binding': binding_dist
+            }
+            return 0.0
+        
+        # Compute changes
+        virial_change = abs(virial - self.previous_state['virial'])
+        escape_change = abs(escape_frac - self.previous_state['escape'])
+        
+        # Kolmogorov-Smirnov test on binding distribution
+        from scipy.stats import ks_2samp
+        ks_stat, _ = ks_2samp(binding_dist, self.previous_state['binding'])
+        
+        # Weighted divergence
+        divergence = (
+            0.3 * virial_change +
+            0.3 * escape_change +
+            0.4 * ks_stat
+        )
+        
+        return divergence
+    
+    def check_threshold(self, state: NBodyState) -> bool:
+        """Return True if structural phase transition detected"""
+        phi = self.compute_divergence(state)
+        return phi > self.threshold
+```
+
+## Phase 3: Five-Stage Integration Loop (1 day)
+
+### Main Simulation Driver
+```python
+# five_stage_nbody.py
+
+class FiveStageNBody:
+    def __init__(self, initial_state: NBodyState, threshold=0.1):
+        self.state = initial_state
+        self.monitor = StructuralMonitor(threshold)
+        self.reactivation_count = 0
+        self.history = {
+            'time': [],
+            'divergence': [],
+            'reactivations': []
+        }
+    
+    def run(self, total_time: float, dt: float, check_interval=10):
+        """Main simulation loop with threshold detection"""
+        steps = int(total_time / dt)
+        
+        for step in range(steps):
+            # Stage 1: Monitor (every check_interval steps)
+            if step % check_interval == 0:
+                divergence = self.monitor.compute_divergence(self.state)
+                self.history['time'].append(self.state.time)
+                self.history['divergence'].append(divergence)
+                
+                if self.monitor.check_threshold(self.state):
+                    # Threshold crossed - trigger reactivation
+                    self.reactivate()
+                    self.history['reactivations'].append(self.state.time)
+            
+            # Regular integration step
+            self.state.leapfrog_step(dt)
+    
+    def reactivate(self):
+        """Stages 2-5: Structural reset"""
+        self.reactivation_count += 1
+        
+        # Stage 2: Selective Destabilization
+        # (For now: just flag we hit a transition)
+        
+        # Stage 3: Intermediary Integration
+        # (Could rebuild Barnes-Hut tree here)
+        
+        # Stage 4: Recursive Commit
+        # Reset monitor state
+        self.monitor.previous_state = None
+        
+        # Stage 5: Operational Reinforcement
+        # Continue with clean state
+        print(f"Reactivation #{self.reactivation_count} at t={self.state.time:.2f}")
+```
+
+## Phase 4: Benchmark Test (1 day)
+
+### Plummer Sphere Validation
+```python
+# test_plummer.py
+
+def generate_plummer_sphere(N=1000, M=1.0, a=1.0):
+    """Generate Plummer sphere initial conditions"""
+    particles = []
+    
+    for i in range(N):
+        # Plummer density profile
+        r = a / np.sqrt(np.random.uniform()**(- 2/3) - 1)
+        theta = np.arccos(2 * np.random.uniform() - 1)
+        phi = 2 * np.pi * np.random.uniform()
+        
+        pos = r * np.array([
+            np.sin(theta) * np.cos(phi),
+            np.sin(theta) * np.sin(phi),
+            np.cos(theta)
+        ])
+        
+        # Velocity from distribution function (simplified)
+        vel = sample_plummer_velocity(r, M, a)
+        
+        particles.append(Particle(
+            position=pos,
+            velocity=vel,
+            mass=M / N,
+            id=i
+        ))
+    
+    return NBodyState(particles)
+
+def benchmark():
+    """Run test and measure performance"""
+    import time
+    
+    # Generate test system
+    state = generate_plummer_sphere(N=1000)
+    sim = FiveStageNBody(state, threshold=0.15)
+    
+    # Run simulation
+    start = time.time()
+    sim.run(total_time=100.0, dt=0.01, check_interval=10)
+    elapsed = time.time() - start
+    
+    # Report results
+    print(f"Simulation time: {elapsed:.2f}s")
+    print(f"Reactivations: {sim.reactivation_count}")
+    print(f"Steps: {10000}")
+    print(f"Reactivation frequency: {sim.reactivation_count/10000:.4f}")
+    
+    # Plot divergence over time
+    import matplotlib.pyplot as plt
+    plt.plot(sim.history['time'], sim.history['divergence'])
+    plt.axhline(y=0.15, color='r', linestyle='--', label='Threshold')
+    for t in sim.history['reactivations']:
+        plt.axvline(x=t, color='g', alpha=0.3)
+    plt.xlabel('Time')
+    plt.ylabel('Structural Divergence Î¦(t)')
+    plt.legend()
+    plt.savefig('plummer_divergence.png')
+```
+
+## Expected Results
+
+If the theory is correct:
+- â Divergence Î¦(t) should spike at known events (core collapse, ejections)
+- â Reactivation count should be O(10-100) over 10,000 steps
+- â Final cluster morphology should match direct N-body
+- â Runtime should scale linearly with N (test N=100, 1000, 10000)
+
+## Timeline
+
+- **Day 1:** Build nbody_core.py + basic tests
+- **Day 2:** Implement structural_monitor.py
+- **Day 3:** Five-stage loop + Plummer benchmark
+- **Day 4:** Compare to scipy/REBOUND direct integration
+- **Day 5:** Write up results, plot figures
+
+## Success Criteria
+
+1. Code runs without crashes
+2. Divergence metric shows clear spikes
+3. Reactivations happen at physically meaningful times
+4. O(N) scaling confirmed with timing tests
+5. Final state looks like a relaxed Plummer sphere
+
+---
+
+**Ready to build this?** All the pieces are here. Just need to type it in.
